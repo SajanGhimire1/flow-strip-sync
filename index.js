@@ -29,7 +29,9 @@ function parseArgs(argv) {
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
-    if (arg === "--help" || arg === "-h") {
+    if (arg === "--version" || arg === "-v") {
+      options.version = true;
+    } else if (arg === "--help" || arg === "-h") {
       options.help = true;
     } else if (arg === "--all" || arg === "-a") { options.all = true; } else if (arg === "--clean") {
       options.clean = true;
