@@ -21,6 +21,7 @@ function parseArgs(argv) {
     clean: false,
     all: false,
     ignore: [],
+    extensions: [".js", ".jsx"],
     dryRun: false,
     json: false,
     quiet: false,
@@ -38,6 +39,13 @@ function parseArgs(argv) {
       options.clean = true;
     } else if (arg === "--quiet" || arg === "-q") { options.quiet = true; } else if (arg === "--json") { options.json = true; } else if (arg === "--dry-run") {
       options.dryRun = true;
+    } else if (arg === "--ext" || arg === "-e") {
+      if (!args[i + 1]) {
+        throw new Error(`Missing value for ${arg}`);
+      }
+      const exts = args[i + 1].split(",").map((ext) => ext.trim().startsWith(".") ? ext.trim() : `.${ext.trim()}`).filter(Boolean);
+      options.extensions = exts;
+      i += 1;
     } else if (arg === "--ignore" || arg === "-i") {
       if (!args[i + 1]) {
         throw new Error(`Missing value for ${arg}`);
@@ -73,6 +81,7 @@ Options:
   -o, --out <dir>   Output directory (default: dist)
   -a, --all         Strip types from all JS files, even without @flow
   -i, --ignore <pat>  Skip matching file or folder (repeatable)
+  -e, --ext <exts>    Comma-separated JS extensions (default: .js,.jsx)
   --clean           Remove output directory before building
   --dry-run         Preview actions without writing files
   --json            Output summary as JSON

@@ -83,5 +83,25 @@ execFileSync(process.execPath, [
 ], { stdio: "pipe" });
 assert.ok(!fs.existsSync(path.join(outDir, "nested", "config.json")), "Ignored file should not be copied");
 
+// 7. --ext strips custom extensions like .mjs
+const mjsFixture = path.join(root, "test", "fixtures", "custom.mjs");
+fs.writeFileSync(mjsFixture, "// @flow\nexport function greet(name: string): string { return name; }\n", "utf8");
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+    "--ext",
+    ".mjs",
+  ], { stdio: "pipe" });
+  const strippedMjs = fs.readFileSync(path.join(outDir, "custom.mjs"), "utf8");
+  assert.ok(!strippedMjs.includes(": string"), "Custom --ext .mjs file should have Flow types stripped");
+} finally {
+  fs.rmSync(mjsFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
