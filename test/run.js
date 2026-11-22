@@ -115,5 +115,9 @@ assert.strictEqual(pkgJson.bin && pkgJson.bin["flow-strip-sync"], "./index.js", 
 // 9. package.json exposes flow-strip-sync bin entry
 assert.strictEqual(pkgJson.bin && pkgJson.bin["flow-strip-sync"], "./index.js", "package.json should define flow-strip-sync bin");
 
+// 10. index.js starts with executable node shebang
+const entryContent = fs.readFileSync(cliPath, "utf8");
+assert.ok(entryContent.startsWith("#!/usr/bin/env node"), "index.js should start with node shebang");
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
