@@ -108,5 +108,12 @@ assert.throws(() => {
   execFileSync(process.execPath, [cliPath, "--src", "does-not-exist-src", "--out", "dist"], { stdio: "pipe" });
 }, (err) => err.status === 1, "Missing source directory should exit with code 1");
 
+// 9. package.json exposes flow-strip-sync bin entry
+const pkgJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+assert.strictEqual(pkgJson.bin && pkgJson.bin["flow-strip-sync"], "./index.js", "package.json should define flow-strip-sync bin");
+
+// 9. package.json exposes flow-strip-sync bin entry
+assert.strictEqual(pkgJson.bin && pkgJson.bin["flow-strip-sync"], "./index.js", "package.json should define flow-strip-sync bin");
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
