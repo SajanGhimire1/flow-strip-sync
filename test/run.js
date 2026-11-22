@@ -49,4 +49,11 @@ const quietOut = execFileSync(process.execPath, [
 ], { encoding: "utf8" });
 assert.strictEqual(quietOut.trim(), "", "Quiet mode should suppress standard output");
 
+assert.throws(() => {
+  execFileSync(process.execPath, [path.join(root, "index.js"), "--bogus-flag"], { stdio: "pipe" });
+}, (err) => err.status === 1, "Unknown flag should exit with code 1");
+
+const verOut = execFileSync(process.execPath, [path.join(root, "index.js"), "--version"], { encoding: "utf8" });
+assert.strictEqual(verOut.trim(), "0.1.0", "Version flag should print package.json version");
+
 console.log("All tests passed!");

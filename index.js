@@ -24,6 +24,7 @@ function parseArgs(argv) {
     json: false,
     quiet: false,
     help: false,
+    version: false,
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -34,12 +35,20 @@ function parseArgs(argv) {
       options.clean = true;
     } else if (arg === "--quiet" || arg === "-q") { options.quiet = true; } else if (arg === "--json") { options.json = true; } else if (arg === "--dry-run") {
       options.dryRun = true;
-    } else if ((arg === "--src" || arg === "-s") && args[i + 1]) {
+    } else if (arg === "--src" || arg === "-s") {
+      if (!args[i + 1]) {
+        throw new Error(`Missing value for ${arg}`);
+      }
       options.src = args[i + 1];
       i += 1;
-    } else if ((arg === "--out" || arg === "-o") && args[i + 1]) {
+    } else if (arg === "--out" || arg === "-o") {
+      if (!args[i + 1]) {
+        throw new Error(`Missing value for ${arg}`);
+      }
       options.out = args[i + 1];
       i += 1;
+    } else {
+      throw new Error(`Unknown option: ${arg}`);
     }
   }
 
@@ -58,6 +67,7 @@ Options:
   --dry-run         Preview actions without writing files
   --json            Output summary as JSON
   -q, --quiet       Suppress non-JSON console output
+  -v, --version     Show CLI version
   -h, --help        Show this help message
 `);
 }
@@ -114,7 +124,19 @@ function processDirectory(srcDir, outDir, stats, options) {
 }
 
 function main() {
-  const options = parseArgs(process.argv);
+  let options;
+  try {
+    options = parseArgs(process.argv);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+
+  if (options.version) {
+    const pkg = require("./package.json");
+    console.log(pkg.version);
+    process.exit(0);
+  }
 
   if (options.help) {
     printHelp();

@@ -18,4 +18,5 @@ node index.js --src src --out dist --clean
 - `--dry-run`: Preview file counts without writing output files
 - `--json`: Print build summary as JSON
 - `--quiet, -q`: Suppress non-JSON console output
+- `--version, -v`: Show CLI version
 - `--help, -h`: Display usage info
