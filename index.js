@@ -19,6 +19,7 @@ function parseArgs(argv) {
     src: "src",
     out: "dist",
     clean: false,
+    all: false,
     dryRun: false,
     help: false,
   };
@@ -27,7 +28,7 @@ function parseArgs(argv) {
     const arg = args[i];
     if (arg === "--help" || arg === "-h") {
       options.help = true;
-    } else if (arg === "--clean") {
+    } else if (arg === "--all" || arg === "-a") { options.all = true; } else if (arg === "--clean") {
       options.clean = true;
     } else if (arg === "--dry-run") {
       options.dryRun = true;
@@ -50,20 +51,21 @@ Usage: flow-strip-sync [--src <dir>] [--out <dir>] [--clean] [--dry-run] [--help
 Options:
   -s, --src <dir>   Source directory (default: src)
   -o, --out <dir>   Output directory (default: dist)
+  -a, --all         Strip types from all JS files, even without @flow
   --clean           Remove output directory before building
   --dry-run         Preview actions without writing files
   -h, --help        Show this help message
 `);
 }
 
-function stripFlowCode(sourceCode) {
+function stripFlowCode(sourceCode, all) {
   if (typeof flowRemoveTypes === "function") {
-    return flowRemoveTypes(sourceCode).toString();
+    return flowRemoveTypes(sourceCode, { all }).toString();
   }
   return sourceCode.replace(/^\s*\/\/\s*@flow\s*\r?\n/m, "");
 }
 
-function processDirectory(srcDir, outDir, stats, dryRun) {
+function processDirectory(srcDir, outDir, stats, options) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
   for (const entry of entries) {
@@ -75,10 +77,10 @@ function processDirectory(srcDir, outDir, stats, dryRun) {
     const outPath = path.join(outDir, entry.name);
 
     if (entry.isDirectory()) {
-      if (!dryRun) {
+      if (!options.dryRun) {
         fs.mkdirSync(outPath, { recursive: true });
       }
-      processDirectory(srcPath, outPath, stats, dryRun);
+      processDirectory(srcPath, outPath, stats, options);
       continue;
     }
 
@@ -90,15 +92,15 @@ function processDirectory(srcDir, outDir, stats, dryRun) {
 
     if (JS_EXTENSIONS.has(ext)) {
       const rawContent = fs.readFileSync(srcPath, "utf8");
-      const stripped = stripFlowCode(rawContent);
+      const stripped = stripFlowCode(rawContent, options.all);
 
-      if (!dryRun) {
+      if (!options.dryRun) {
         fs.mkdirSync(path.dirname(outPath), { recursive: true });
         fs.writeFileSync(outPath, stripped, "utf8");
       }
       stats.strippedJs += 1;
     } else {
-      if (!dryRun) {
+      if (!options.dryRun) {
         fs.mkdirSync(path.dirname(outPath), { recursive: true });
         fs.copyFileSync(srcPath, outPath);
       }
@@ -133,7 +135,7 @@ function main() {
     fs.mkdirSync(resolvedOut, { recursive: true });
   }
 
-  processDirectory(resolvedSrc, resolvedOut, stats, options.dryRun);
+  processDirectory(resolvedSrc, resolvedOut, stats, options);
 
   const modeLabel = options.dryRun ? " (dry-run)" : "";
   console.log(
