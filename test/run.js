@@ -103,5 +103,10 @@ try {
   fs.rmSync(mjsFixture, { force: true });
 }
 
+// 8. Missing --src directory exits with code 1
+assert.throws(() => {
+  execFileSync(process.execPath, [cliPath, "--src", "does-not-exist-src", "--out", "dist"], { stdio: "pipe" });
+}, (err) => err.status === 1, "Missing source directory should exit with code 1");
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
