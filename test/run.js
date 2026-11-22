@@ -69,5 +69,19 @@ assert.throws(() => {
   execFileSync(process.execPath, [cliPath, "--bogus-flag"], { stdio: "pipe" });
 }, (err) => err.status === 1, "Unknown flag should exit with code 1");
 
+// 6. --ignore skips matching files
+execFileSync(process.execPath, [
+  cliPath,
+  "--src",
+  "test/fixtures",
+  "--out",
+  "dist",
+  "--clean",
+  "--all",
+  "--ignore",
+  "config.json",
+], { stdio: "pipe" });
+assert.ok(!fs.existsSync(path.join(outDir, "nested", "config.json")), "Ignored file should not be copied");
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

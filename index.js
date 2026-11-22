@@ -20,6 +20,7 @@ function parseArgs(argv) {
     out: "dist",
     clean: false,
     all: false,
+    ignore: [],
     dryRun: false,
     json: false,
     quiet: false,
@@ -37,6 +38,12 @@ function parseArgs(argv) {
       options.clean = true;
     } else if (arg === "--quiet" || arg === "-q") { options.quiet = true; } else if (arg === "--json") { options.json = true; } else if (arg === "--dry-run") {
       options.dryRun = true;
+    } else if (arg === "--ignore" || arg === "-i") {
+      if (!args[i + 1]) {
+        throw new Error(`Missing value for ${arg}`);
+      }
+      options.ignore.push(args[i + 1]);
+      i += 1;
     } else if (arg === "--src" || arg === "-s") {
       if (!args[i + 1]) {
         throw new Error(`Missing value for ${arg}`);
@@ -65,6 +72,7 @@ Options:
   -s, --src <dir>   Source directory (default: src)
   -o, --out <dir>   Output directory (default: dist)
   -a, --all         Strip types from all JS files, even without @flow
+  -i, --ignore <pat>  Skip matching file or folder (repeatable)
   --clean           Remove output directory before building
   --dry-run         Preview actions without writing files
   --json            Output summary as JSON
@@ -81,10 +89,32 @@ function stripFlowCode(sourceCode, all) {
   return sourceCode.replace(/^\s*\/\/\s*@flow\s*\r?\n/m, "");
 }
 
-function processDirectory(srcDir, outDir, stats, options) {
+function shouldIgnore(relativePath, patterns) {
+  const normalized = relativePath.split(path.sep).join("/");
+  const baseName = path.basename(normalized);
+  return patterns.some((pattern) => {
+    if (normalized === pattern || baseName === pattern) {
+      return true;
+    }
+    if (pattern.startsWith("*")) {
+      return baseName.endsWith(pattern.slice(1));
+    }
+    if (pattern.endsWith("/")) {
+      const folder = pattern.slice(0, -1);
+      return normalized === folder || normalized.startsWith(folder + "/");
+    }
+    return false;
+  });
+}
+
+function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
   for (const entry of entries) {
+    const relPath = path.relative(baseSrcDir, path.join(srcDir, entry.name));
+    if (options.ignore && shouldIgnore(relPath, options.ignore)) {
+      continue;
+    }
     if (entry.name === "node_modules" || entry.name.startsWith(".")) {
       continue;
     }
@@ -96,7 +126,7 @@ function processDirectory(srcDir, outDir, stats, options) {
       if (!options.dryRun) {
         fs.mkdirSync(outPath, { recursive: true });
       }
-      processDirectory(srcPath, outPath, stats, options);
+      processDirectory(srcPath, outPath, stats, options, baseSrcDir, baseSrcDir);
       continue;
     }
 
