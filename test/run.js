@@ -38,4 +38,15 @@ assert.strictEqual(parsed.strippedJs, 2, "JSON output should report 2 JS files")
 assert.strictEqual(parsed.copiedAssets, 1, "JSON output should report 1 asset file");
 assert.strictEqual(parsed.dryRun, true, "JSON output should report dryRun: true");
 
+const quietOut = execFileSync(process.execPath, [
+  path.join(root, "index.js"),
+  "--src",
+  "test/fixtures",
+  "--out",
+  "dist",
+  "--dry-run",
+  "--quiet",
+], { encoding: "utf8" });
+assert.strictEqual(quietOut.trim(), "", "Quiet mode should suppress standard output");
+
 console.log("All tests passed!");
