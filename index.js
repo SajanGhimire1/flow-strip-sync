@@ -21,6 +21,7 @@ function parseArgs(argv) {
     clean: false,
     all: false,
     dryRun: false,
+    json: false,
     help: false,
   };
 
@@ -30,7 +31,7 @@ function parseArgs(argv) {
       options.help = true;
     } else if (arg === "--all" || arg === "-a") { options.all = true; } else if (arg === "--clean") {
       options.clean = true;
-    } else if (arg === "--dry-run") {
+    } else if (arg === "--json") { options.json = true; } else if (arg === "--dry-run") {
       options.dryRun = true;
     } else if ((arg === "--src" || arg === "-s") && args[i + 1]) {
       options.src = args[i + 1];
@@ -54,6 +55,7 @@ Options:
   -a, --all         Strip types from all JS files, even without @flow
   --clean           Remove output directory before building
   --dry-run         Preview actions without writing files
+  --json            Output summary as JSON
   -h, --help        Show this help message
 `);
 }
@@ -137,10 +139,20 @@ function main() {
 
   processDirectory(resolvedSrc, resolvedOut, stats, options);
 
-  const modeLabel = options.dryRun ? " (dry-run)" : "";
-  console.log(
-    `Done${modeLabel}: stripped ${stats.strippedJs} JS file(s), copied ${stats.copiedAssets} asset file(s) -> ${options.out}`
-  );
+  if (options.json) {
+    console.log(JSON.stringify({
+      src: options.src,
+      out: options.out,
+      strippedJs: stats.strippedJs,
+      copiedAssets: stats.copiedAssets,
+      dryRun: options.dryRun,
+    }));
+  } else {
+    const modeLabel = options.dryRun ? " (dry-run)" : "";
+    console.log(
+      `Done${modeLabel}: stripped ${stats.strippedJs} JS file(s), copied ${stats.copiedAssets} asset file(s) -> ${options.out}`
+    );
+  }
 }
 
 main();

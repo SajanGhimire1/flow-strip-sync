@@ -24,4 +24,18 @@ assert.ok(fs.existsSync(path.join(outDir, "styles.css")), "Non-JS asset should b
 const noPragmaJs = fs.readFileSync(path.join(outDir, "no-pragma.js"), "utf8");
 assert.ok(!noPragmaJs.includes(": number"), "Flow types should be stripped without @flow when --all is passed");
 fs.rmSync(outDir, { recursive: true, force: true });
+const jsonOut = execFileSync(process.execPath, [
+  path.join(root, "index.js"),
+  "--src",
+  "test/fixtures",
+  "--out",
+  "dist",
+  "--dry-run",
+  "--json",
+], { encoding: "utf8" });
+const parsed = JSON.parse(jsonOut.trim());
+assert.strictEqual(parsed.strippedJs, 2, "JSON output should report 2 JS files");
+assert.strictEqual(parsed.copiedAssets, 1, "JSON output should report 1 asset file");
+assert.strictEqual(parsed.dryRun, true, "JSON output should report dryRun: true");
+
 console.log("All tests passed!");
