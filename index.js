@@ -122,6 +122,13 @@ function stripFlowTypes(source) {
     .replace(/^\s*(?:export\s+)?type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*=\s*[^;\r\n]+;?\s*\r?\n?/gm, "");
 }
 
+function stripInlineAnnotations(source) {
+  return source
+    .replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+)\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*=)/g, "$1")
+    .replace(/(\([A-Za-z0-9_$,\s]*)([A-Za-z0-9_$]+)\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*[,)])/g, "$1$2")
+    .replace(/(\))\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*\{)/g, "$1");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 

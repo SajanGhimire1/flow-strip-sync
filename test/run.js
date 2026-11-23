@@ -160,5 +160,28 @@ try {
   fs.rmSync(flowFixture, { force: true });
 }
 
+// 15. Strips inline variable, parameter, and return annotations
+const inlineFixture = path.join(root, "test", "fixtures", "inline-annotations.js");
+fs.writeFileSync(
+  inlineFixture,
+  "// @flow\nfunction add(a: number, b: number): number {\n  const label: string = \"sum\";\n  return a + b;\n}\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedInline = fs.readFileSync(path.join(outDir, "inline-annotations.js"), "utf8");
+  assert.ok(!strippedInline.includes(": number"), "Return and parameter type annotations should be stripped");
+  assert.ok(!strippedInline.includes(": string"), "Variable type annotations should be stripped");
+} finally {
+  fs.rmSync(inlineFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
