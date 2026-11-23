@@ -133,5 +133,9 @@ execFileSync(process.execPath, [
 ], { stdio: "pipe" });
 assert.ok(!fs.existsSync(staleFile), "--clean should remove pre-existing files in output directory");
 
+// 13. --help prints usage and exits with code 0
+const helpOut = execFileSync(process.execPath, [cliPath, "--help"], { encoding: "utf8" });
+assert.ok(helpOut.includes("--src") && helpOut.includes("--out") && helpOut.includes("--version"), "Help output should list CLI options");
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
