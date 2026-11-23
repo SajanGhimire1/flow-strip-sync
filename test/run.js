@@ -340,5 +340,27 @@ try {
   fs.rmSync(objTypeFixture, { force: true });
 }
 
+// 23. Strips Flow function type annotations after colons
+const fnTypeFixture = path.join(root, "test", "fixtures", "fn-type-sample.js");
+fs.writeFileSync(
+  fnTypeFixture,
+  "// @flow\nfunction applyTransform(fn: (x: number) => number, val: number): number { return fn(val); }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedFn = fs.readFileSync(path.join(outDir, "fn-type-sample.js"), "utf8");
+  assert.ok(!strippedFn.includes("(x: number) => number"), "Function type annotation should be stripped");
+} finally {
+  fs.rmSync(fnTypeFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
