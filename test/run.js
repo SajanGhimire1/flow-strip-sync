@@ -137,5 +137,28 @@ assert.ok(!fs.existsSync(staleFile), "--clean should remove pre-existing files i
 const helpOut = execFileSync(process.execPath, [cliPath, "--help"], { encoding: "utf8" });
 assert.ok(helpOut.includes("--src") && helpOut.includes("--out") && helpOut.includes("--version"), "Help output should list CLI options");
 
+// 14. Strips Flow type imports and type aliases
+const flowFixture = path.join(root, "test", "fixtures", "types-sample.js");
+fs.writeFileSync(
+  flowFixture,
+  "// @flow\nimport type { Config } from './config';\ntype UserId = string;\nexport function getId(id: UserId): string { return id; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedFlow = fs.readFileSync(path.join(outDir, "types-sample.js"), "utf8");
+  assert.ok(!strippedFlow.includes("import type"), "Flow type imports should be stripped");
+  assert.ok(!strippedFlow.includes("type UserId"), "Flow type aliases should be stripped");
+} finally {
+  fs.rmSync(flowFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

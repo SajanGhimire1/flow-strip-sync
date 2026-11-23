@@ -116,6 +116,12 @@ function shouldIgnore(relativePath, patterns) {
   });
 }
 
+function stripFlowTypes(source) {
+  return source
+    .replace(/^\s*import\s+(?:type|typeof)\s+[^;\r\n]+;?\s*\r?\n?/gm, "")
+    .replace(/^\s*(?:export\s+)?type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*=\s*[^;\r\n]+;?\s*\r?\n?/gm, "");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
@@ -151,7 +157,7 @@ function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
 
       if (!options.dryRun) {
         fs.mkdirSync(path.dirname(outPath), { recursive: true });
-        fs.writeFileSync(outPath, stripped, "utf8");
+        fs.writeFileSync(outPath, stripFlowTypes(stripped), "utf8");
       }
       stats.strippedJs += 1;
     } else {
