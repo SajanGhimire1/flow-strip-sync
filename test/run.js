@@ -318,5 +318,27 @@ try {
   fs.rmSync(varianceFixture, { force: true });
 }
 
+// 22. Strips inline Flow object type annotations after colons
+const objTypeFixture = path.join(root, "test", "fixtures", "object-type-sample.js");
+fs.writeFileSync(
+  objTypeFixture,
+  "// @flow\nfunction getTitle(opts: { title: string }): string { return opts.title; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedObj = fs.readFileSync(path.join(outDir, "object-type-sample.js"), "utf8");
+  assert.ok(!strippedObj.includes("opts: { title: string }"), "Inline object parameter annotation should be stripped");
+} finally {
+  fs.rmSync(objTypeFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

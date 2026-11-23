@@ -158,6 +158,12 @@ function stripVarianceModifiers(source) {
   return source.replace(/([\{\[,;]\s*)[+-](?=[A-Za-z0-9_$]+\s*:)/g, "$1");
 }
 
+function stripObjectTypeAnnotations(source) {
+  return source
+    .replace(/\{\|[\s\S]*?\|\}/g, "{}")
+    .replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+|\([A-Za-z0-9_$,\s]*[A-Za-z0-9_$]+|\))\s*:\s*\{[^{}]*\}/g, "$1");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
