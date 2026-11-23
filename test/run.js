@@ -206,5 +206,28 @@ try {
   fs.rmSync(exactFixture, { force: true });
 }
 
+// 17. Strips Flow interface declarations
+const ifaceFixture = path.join(root, "test", "fixtures", "interface-sample.js");
+fs.writeFileSync(
+  ifaceFixture,
+  "// @flow\ninterface Serializable {\n  toJson(): string;\n}\nexport function run(): boolean { return true; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedIface = fs.readFileSync(path.join(outDir, "interface-sample.js"), "utf8");
+  assert.ok(!strippedIface.includes("interface Serializable"), "Flow interface declarations should be stripped");
+  assert.ok(!strippedIface.includes("toJson(): string"), "Interface body members should be stripped");
+} finally {
+  fs.rmSync(ifaceFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

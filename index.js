@@ -135,6 +135,10 @@ function stripExactAndOptionalTypes(source) {
     .replace(/([A-Za-z0-9_$]+)\?\s*:\s*[A-Za-z0-9_$|<>[\]]+/g, "$1");
 }
 
+function stripFlowInterfaces(source) {
+  return source.replace(/^\s*(?:export\s+)?interface\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*\{[\s\S]*?\}\s*\r?\n?/gm, "");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
