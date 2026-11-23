@@ -176,6 +176,10 @@ function stripMaybeTypeAnnotations(source) {
   return source.replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+|\([A-Za-z0-9_$,\s]*[A-Za-z0-9_$]+|\))\s*:\s*\?[A-Za-z0-9_$|<>\[\]]+/g, "$1");
 }
 
+function stripFlowTypeComments(source) {
+  return source.replace(/\/\*::[\s\S]*?\*\//g, "");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
@@ -211,7 +215,7 @@ function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
 
       if (!options.dryRun) {
         fs.mkdirSync(path.dirname(outPath), { recursive: true });
-        fs.writeFileSync(outPath, stripFlowTypes(stripped), "utf8");
+        fs.writeFileSync(outPath, stripFlowTypeComments(stripFlowTypes(stripped)), "utf8");
       }
       stats.strippedJs += 1;
     } else {

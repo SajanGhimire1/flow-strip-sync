@@ -406,5 +406,27 @@ try {
   fs.rmSync(maybeTypeFixture, { force: true });
 }
 
+// 26. Strips Flow /*:: ... */ type comment blocks
+const typeCommentFixture = path.join(root, "test", "fixtures", "type-comment-sample.js");
+fs.writeFileSync(
+  typeCommentFixture,
+  "// @flow\n/*:: type CommentAlias = number; */\nexport const count = 42;\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedComment = fs.readFileSync(path.join(outDir, "type-comment-sample.js"), "utf8");
+  assert.ok(!strippedComment.includes("CommentAlias"), "Flow /*:: ... */ type comment should be stripped");
+} finally {
+  fs.rmSync(typeCommentFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
