@@ -424,8 +424,31 @@ try {
   ], { stdio: "pipe" });
   const strippedComment = fs.readFileSync(path.join(outDir, "type-comment-sample.js"), "utf8");
   assert.ok(!strippedComment.includes("CommentAlias"), "Flow /*:: ... */ type comment should be stripped");
+  assert.ok(!strippedComment.includes("/*::"), "Opening /*:: marker should be stripped");
 } finally {
   fs.rmSync(typeCommentFixture, { force: true });
+}
+
+// 27. Verifies stripped output files parse as valid JavaScript with node --check
+const syntaxFixture = path.join(root, "test", "fixtures", "syntax-check-sample.mjs");
+fs.writeFileSync(
+  syntaxFixture,
+  "// @flow\n/*:: type SyntaxCheckType = string; */\nexport function greet(name) { return `Hello ${name}`; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const checkedFile = path.join(outDir, "syntax-check-sample.mjs");
+  execFileSync(process.execPath, ["--check", checkedFile], { stdio: "pipe" });
+} finally {
+  fs.rmSync(syntaxFixture, { force: true });
 }
 
 fs.rmSync(outDir, { recursive: true, force: true });
