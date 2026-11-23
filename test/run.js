@@ -296,5 +296,27 @@ try {
   fs.rmSync(opaqueFixture, { force: true });
 }
 
+// 21. Strips Flow + and - variance modifiers before property annotations
+const varianceFixture = path.join(root, "test", "fixtures", "variance-sample.js");
+fs.writeFileSync(
+  varianceFixture,
+  "// @flow\nfunction readBox(box: { +value: number }): number { return box.value; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedVariance = fs.readFileSync(path.join(outDir, "variance-sample.js"), "utf8");
+  assert.ok(!strippedVariance.includes("+value"), "Covariant + modifier should be stripped");
+} finally {
+  fs.rmSync(varianceFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

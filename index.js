@@ -154,6 +154,10 @@ function stripOpaqueTypes(source) {
   return source.replace(/^\s*(?:export\s+)?opaque\s+type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?[^;\r\n]*;?\s*\r?\n?/gm, "");
 }
 
+function stripVarianceModifiers(source) {
+  return source.replace(/([\{\[,;]\s*)[+-](?=[A-Za-z0-9_$]+\s*:)/g, "$1");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
