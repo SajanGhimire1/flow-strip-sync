@@ -118,62 +118,9 @@ function shouldIgnore(relativePath, patterns) {
 
 function stripFlowTypes(source) {
   return source
-    .replace(/^\s*import\s+(?:type|typeof)\s+[^;\r\n]+;?\s*\r?\n?/gm, "")
-    .replace(/^\s*(?:export\s+)?type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*=\s*[^;\r\n]+;?\s*\r?\n?/gm, "");
-}
-
-function stripInlineAnnotations(source) {
-  return source
-    .replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+)\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*=)/g, "$1")
-    .replace(/(\([A-Za-z0-9_$,\s]*)([A-Za-z0-9_$]+)\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*[,)])/g, "$1$2")
-    .replace(/(\))\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*\{)/g, "$1");
-}
-
-function stripExactAndOptionalTypes(source) {
-  return source
-    .replace(/\{\|[\s\S]*?\|\}/g, "{}")
-    .replace(/([A-Za-z0-9_$]+)\?\s*:\s*[A-Za-z0-9_$|<>[\]]+/g, "$1");
-}
-
-function stripFlowInterfaces(source) {
-  return source.replace(/^\s*(?:export\s+)?interface\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*\{[\s\S]*?\}\s*\r?\n?/gm, "");
-}
-
-function stripFlowDeclares(source) {
-  return source
-    .replace(/^\s*(?:export\s+)?declare\s+(?:function|var|let|const)\s+[^;\r\n]+;?\s*\r?\n?/gm, "")
-    .replace(/^\s*(?:export\s+)?declare\s+(?:class|module)\s+[A-Za-z0-9_$.]+(?:<[^>]+>)?\s*\{[\s\S]*?\}\s*\r?\n?/gm, "");
-}
-
-const FLOW_CAST_RE = new RegExp("\\(([A-Za-z0-9_$.]+)\\s*:\\s*[A-Za-z0-9_$|<>\\[\\]]+\\s*\\)", "g");
-function stripFlowCasts(source) {
-  return source.replace(FLOW_CAST_RE, "($1)");
-}
-
-function stripOpaqueTypes(source) {
-  return source.replace(/^\s*(?:export\s+)?opaque\s+type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?[^;\r\n]*;?\s*\r?\n?/gm, "");
-}
-
-function stripVarianceModifiers(source) {
-  return source.replace(/([\{\[,;]\s*)[+-](?=[A-Za-z0-9_$]+\s*:)/g, "$1");
-}
-
-function stripObjectTypeAnnotations(source) {
-  return source
-    .replace(/\{\|[\s\S]*?\|\}/g, "{}")
-    .replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+|\([A-Za-z0-9_$,\s]*[A-Za-z0-9_$]+|\))\s*:\s*\{[^{}]*\}/g, "$1");
-}
-
-function stripFunctionTypeAnnotations(source) {
-  return source.replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+|\([A-Za-z0-9_$,\s]*[A-Za-z0-9_$]+|\))\s*:\s*\([^)]*\)\s*=>\s*[A-Za-z0-9_$|<>\[\]]+/g, "$1");
-}
-
-function stripGenericCallArgs(source) {
-  return source.replace(/([A-Za-z0-9_$]+)<[A-Za-z0-9_$,\s|?&\[\]]+>(?=\s*\()/g, "$1");
-}
-
-function stripMaybeTypeAnnotations(source) {
-  return source.replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+|\([A-Za-z0-9_$,\s]*[A-Za-z0-9_$]+|\))\s*:\s*\?[A-Za-z0-9_$|<>\[\]]+/g, "$1");
+    .replace(/^\s*import\s+type\s+[\s\S]*?;\s*\r?\n?/gm, "")
+    .replace(/^\s*export\s+type\s+[\s\S]*?;\s*\r?\n?/gm, "")
+    .replace(/^\s*type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*=\s*[\s\S]*?;\s*\r?\n?/gm, "");
 }
 
 function stripFlowTypeComments(source) {
