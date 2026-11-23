@@ -183,5 +183,28 @@ try {
   fs.rmSync(inlineFixture, { force: true });
 }
 
+// 16. Strips exact object types and optional parameter annotations
+const exactFixture = path.join(root, "test", "fixtures", "exact-optional.js");
+fs.writeFileSync(
+  exactFixture,
+  "// @flow\ntype ExactUser = {| id: number, name: string |};\nfunction greet(name?: string): void { const u: ExactUser = {}; return u; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedExact = fs.readFileSync(path.join(outDir, "exact-optional.js"), "utf8");
+  assert.ok(!strippedExact.includes("{|") && !strippedExact.includes("|}"), "Exact object markers should be stripped");
+  assert.ok(!strippedExact.includes("name?: string"), "Optional parameter type annotation should be stripped");
+} finally {
+  fs.rmSync(exactFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

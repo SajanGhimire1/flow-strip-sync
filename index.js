@@ -129,6 +129,12 @@ function stripInlineAnnotations(source) {
     .replace(/(\))\s*:\s*[A-Za-z0-9_$|<>[\]]+(?=\s*\{)/g, "$1");
 }
 
+function stripExactAndOptionalTypes(source) {
+  return source
+    .replace(/\{\|[\s\S]*?\|\}/g, "{}")
+    .replace(/([A-Za-z0-9_$]+)\?\s*:\s*[A-Za-z0-9_$|<>[\]]+/g, "$1");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
