@@ -150,6 +150,10 @@ function stripFlowCasts(source) {
   return source.replace(FLOW_CAST_RE, "($1)");
 }
 
+function stripOpaqueTypes(source) {
+  return source.replace(/^\s*(?:export\s+)?opaque\s+type\s+[A-Za-z0-9_$]+(?:<[^>]+>)?[^;\r\n]*;?\s*\r?\n?/gm, "");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 

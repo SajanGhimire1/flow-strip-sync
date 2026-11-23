@@ -274,5 +274,27 @@ try {
   fs.rmSync(castFixture, { force: true });
 }
 
+// 20. Strips Flow opaque type declarations
+const opaqueFixture = path.join(root, "test", "fixtures", "opaque-sample.js");
+fs.writeFileSync(
+  opaqueFixture,
+  "// @flow\nexport opaque type SessionId = string;\nexport function makeId(): string { return \"abc\"; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedOpaque = fs.readFileSync(path.join(outDir, "opaque-sample.js"), "utf8");
+  assert.ok(!strippedOpaque.includes("opaque type"), "Flow opaque types should be stripped");
+} finally {
+  fs.rmSync(opaqueFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
