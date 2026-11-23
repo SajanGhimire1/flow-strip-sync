@@ -172,6 +172,10 @@ function stripGenericCallArgs(source) {
   return source.replace(/([A-Za-z0-9_$]+)<[A-Za-z0-9_$,\s|?&\[\]]+>(?=\s*\()/g, "$1");
 }
 
+function stripMaybeTypeAnnotations(source) {
+  return source.replace(/(\b(?:const|let|var)\s+[A-Za-z0-9_$]+|\([A-Za-z0-9_$,\s]*[A-Za-z0-9_$]+|\))\s*:\s*\?[A-Za-z0-9_$|<>\[\]]+/g, "$1");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 

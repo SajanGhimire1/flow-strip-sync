@@ -384,5 +384,27 @@ try {
   fs.rmSync(genericCallFixture, { force: true });
 }
 
+// 25. Strips Flow maybe type annotations (?Type) after colons
+const maybeTypeFixture = path.join(root, "test", "fixtures", "maybe-type-sample.js");
+fs.writeFileSync(
+  maybeTypeFixture,
+  "// @flow\nfunction pick(item: ?string): ?string { return item; }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedMaybe = fs.readFileSync(path.join(outDir, "maybe-type-sample.js"), "utf8");
+  assert.ok(!strippedMaybe.includes("?string"), "Flow maybe type annotation should be stripped");
+} finally {
+  fs.rmSync(maybeTypeFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
