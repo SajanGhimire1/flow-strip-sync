@@ -362,5 +362,27 @@ try {
   fs.rmSync(fnTypeFixture, { force: true });
 }
 
+// 24. Strips Flow generic type arguments before call parentheses
+const genericCallFixture = path.join(root, "test", "fixtures", "generic-calls-sample.js");
+fs.writeFileSync(
+  genericCallFixture,
+  "// @flow\nfunction wrap(val: string): string[] { return new Array<string>(val); }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedGeneric = fs.readFileSync(path.join(outDir, "generic-calls-sample.js"), "utf8");
+  assert.ok(!strippedGeneric.includes("Array<string>"), "Generic type arguments on calls should be stripped");
+} finally {
+  fs.rmSync(genericCallFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
