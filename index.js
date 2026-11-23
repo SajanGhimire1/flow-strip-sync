@@ -145,6 +145,11 @@ function stripFlowDeclares(source) {
     .replace(/^\s*(?:export\s+)?declare\s+(?:class|module)\s+[A-Za-z0-9_$.]+(?:<[^>]+>)?\s*\{[\s\S]*?\}\s*\r?\n?/gm, "");
 }
 
+const FLOW_CAST_RE = new RegExp("\\(([A-Za-z0-9_$.]+)\\s*:\\s*[A-Za-z0-9_$|<>\\[\\]]+\\s*\\)", "g");
+function stripFlowCasts(source) {
+  return source.replace(FLOW_CAST_RE, "($1)");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 

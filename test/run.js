@@ -252,5 +252,27 @@ try {
   fs.rmSync(declareFixture, { force: true });
 }
 
+// 19. Strips Flow parenthesized type casts
+const castFixture = path.join(root, "test", "fixtures", "casts-sample.js");
+fs.writeFileSync(
+  castFixture,
+  "// @flow\nexport function parseInput(raw: mixed): string {\n  const text = (raw: string);\n  return text;\n}\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedCast = fs.readFileSync(path.join(outDir, "casts-sample.js"), "utf8");
+  assert.ok(!strippedCast.includes("(raw: string)"), "Parenthesized Flow type casts should be stripped");
+} finally {
+  fs.rmSync(castFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
