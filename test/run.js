@@ -229,5 +229,28 @@ try {
   fs.rmSync(ifaceFixture, { force: true });
 }
 
+// 18. Strips Flow declare statements
+const declareFixture = path.join(root, "test", "fixtures", "declare-sample.js");
+fs.writeFileSync(
+  declareFixture,
+  "// @flow\ndeclare var __API_URL__: string;\ndeclare function ping(host: string): boolean;\nexport function check(): boolean { return ping(__API_URL__); }\n",
+  "utf8"
+);
+try {
+  execFileSync(process.execPath, [
+    cliPath,
+    "--src",
+    "test/fixtures",
+    "--out",
+    "dist",
+    "--clean",
+  ], { stdio: "pipe" });
+  const strippedDeclare = fs.readFileSync(path.join(outDir, "declare-sample.js"), "utf8");
+  assert.ok(!strippedDeclare.includes("declare var"), "Flow declare var statements should be stripped");
+  assert.ok(!strippedDeclare.includes("declare function"), "Flow declare function statements should be stripped");
+} finally {
+  fs.rmSync(declareFixture, { force: true });
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");

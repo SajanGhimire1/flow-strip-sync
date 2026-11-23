@@ -139,6 +139,12 @@ function stripFlowInterfaces(source) {
   return source.replace(/^\s*(?:export\s+)?interface\s+[A-Za-z0-9_$]+(?:<[^>]+>)?\s*\{[\s\S]*?\}\s*\r?\n?/gm, "");
 }
 
+function stripFlowDeclares(source) {
+  return source
+    .replace(/^\s*(?:export\s+)?declare\s+(?:function|var|let|const)\s+[^;\r\n]+;?\s*\r?\n?/gm, "")
+    .replace(/^\s*(?:export\s+)?declare\s+(?:class|module)\s+[A-Za-z0-9_$.]+(?:<[^>]+>)?\s*\{[\s\S]*?\}\s*\r?\n?/gm, "");
+}
+
 function processDirectory(srcDir, outDir, stats, options, baseSrcDir = srcDir) {
   const entries = fs.readdirSync(srcDir, { withFileTypes: true });
 
