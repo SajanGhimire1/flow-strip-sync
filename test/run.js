@@ -119,5 +119,19 @@ assert.strictEqual(pkgJson.bin && pkgJson.bin["flow-strip-sync"], "./index.js", 
 const entryContent = fs.readFileSync(cliPath, "utf8");
 assert.ok(entryContent.startsWith("#!/usr/bin/env node"), "index.js should start with node shebang");
 
+// 11. --clean removes stale files in output directory
+fs.mkdirSync(outDir, { recursive: true });
+const staleFile = path.join(outDir, "stale.txt");
+fs.writeFileSync(staleFile, "old artifact", "utf8");
+execFileSync(process.execPath, [
+  cliPath,
+  "--src",
+  "test/fixtures",
+  "--out",
+  "dist",
+  "--clean",
+], { stdio: "pipe" });
+assert.ok(!fs.existsSync(staleFile), "--clean should remove pre-existing files in output directory");
+
 fs.rmSync(outDir, { recursive: true, force: true });
 console.log("All tests passed!");
